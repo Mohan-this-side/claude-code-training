@@ -1,3 +1,8 @@
+---
+name: epic
+description: Turn a ticket into an epic — a written, reviewable implementation plan grounded in the actual codebase. Use before writing code, when the user asks to plan a ticket or invokes /epic with a ticket path.
+---
+
 # /epic
 
 Turn a ticket into an epic: a written, reviewable plan that becomes the context for the build.

@@ -1,3 +1,8 @@
+---
+name: pr
+description: Write the pull request description for the work in the current branch, in the team's required format. Use when the user asks to write or draft a PR description, or invokes /pr.
+---
+
 # /pr
 
 Write the pull request description for the work in this branch.
