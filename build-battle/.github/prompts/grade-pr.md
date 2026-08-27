@@ -41,16 +41,16 @@ Score: fraction of applicable rules passed. If they did not implement a feature 
 
 Did they build context before building code, or did they vibe it?
 
-Look for an epic in `docs/epics/`, and look at the PR description and commit history for evidence of planning.
+Look for a spec in `docs/specs/`, and look at the PR description and commit history for evidence of planning.
 
 | Score | What it looks like |
 |-------|--------------------|
-| 1.0 | An epic exists, cites real file paths from this repo, states the domain rules, maps the files it will touch, and the delivered code matches it |
-| 0.7 | An epic exists and is broadly accurate, but thin on current-state detail or drifts from what was built |
-| 0.4 | No epic, but the PR description shows a considered plan and the commits are sequenced deliberately |
+| 1.0 | A spec exists, cites real file paths from this repo, states the domain rules, maps the files it will touch, and the delivered code matches it |
+| 0.7 | A spec exists and is broadly accurate, but thin on current-state detail or drifts from what was built |
+| 0.4 | No spec, but the PR description shows a considered plan and the commits are sequenced deliberately |
 | 0.0 | No plan anywhere. One giant commit, no stated approach |
 
-An epic that is generic, or that describes files that do not exist in this repository, scores no better than 0.4. The point is reading the codebase, not generating a document.
+A spec that is generic, or that describes files that do not exist in this repository, scores no better than 0.4. The point is reading the codebase, not generating a document.
 
 ## 4. Code quality — 15%
 
@@ -122,7 +122,7 @@ Multiply the result by 100 for the headline. Report every section out of 100 as 
 - Server-side validation: ✅ / ❌ / n/a — [one line]
 
 ### Context and planning — NN / 100 (10%)
-[2-3 sentences. Name the epic file if there is one, and say whether the code matches it]
+[2-3 sentences. Name the spec file if there is one, and say whether the code matches it]
 
 ### Code quality — NN / 100 (15%)
 [2-3 sentences]

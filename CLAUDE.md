@@ -16,16 +16,16 @@ Read the narrowest one that applies before you write code.
 ## Repository layout
 
 - `docs/tickets/` — the tickets engineers work, written as they arrive on a sprint board
-- `docs/epics/` — where plans go before code does, and the template they follow
+- `docs/specs/` — where plans go before code does, and the template they follow
 - `docs/ORG-STANDARDS.md` — the org-wide engineering standards every service is measured against
-- `.claude/` — the skills (`/epic`, `/pr`, `/ship-ready`) and the `bug-investigator` subagent. Open Claude Code at this root and they are available everywhere
+- `.claude/` — the skills (`/spec`, `/pr`, `/ship-ready`) and the `bug-investigator` subagent. Open Claude Code at this root and they are available everywhere
 - `build-battle/` — the exercise brief and the scoring rubric
 - `build-battle/merchant-console/` — Northwind Payments, the application itself
 - `.github/` — pull request template and the grading workflow
 
 ## Conventions
 
-- Plan before you build. `/epic` turns a ticket into a written plan that cites real files; it is scored.
+- Plan before you build. `/spec` turns a ticket into a written plan that cites real files; it is scored.
 - Read before you edit. A second implementation of an existing helper is a defect, not a shortcut.
 - Never edit seed data to make a failing case disappear.
 - Nothing in this repository may resemble real payment data. Generated card numbers use the `4242` test BIN.

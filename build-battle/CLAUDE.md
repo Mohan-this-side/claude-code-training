@@ -7,21 +7,21 @@ The exercise wrapper. The application itself lives in `merchant-console/` and ha
 Taking ticket NWP-201 end to end in a codebase you did not write, in 40 minutes, then submitting it as a pull request to be scored.
 
 - Ticket: `docs/tickets/NWP-201.md` at the repository root
-- Your plan goes in: `docs/epics/`
+- Your plan goes in: `docs/specs/`
 - App: `merchant-console/` — read its CLAUDE.md before writing code
 
 ## The order that works
 
 1. `@docs/tickets/NWP-201.md` — read it, including the out-of-scope list
-2. `/epic docs/tickets/NWP-201.md` — build the context, review what it wrote
-3. `@docs/epics/NWP-201-issue-cards.md` — load the plan, then plan mode, then build
+2. `/spec docs/tickets/NWP-201.md` — build the context, review what it wrote
+3. `@docs/specs/NWP-201-issue-cards.md` — load the plan, then plan mode, then build
 4. `/ship-ready` — check yourself
 5. `/pr` — write the description
 6. Commit, push, open the pull request
 
 ## What is preloaded
 
-- Skills: `/epic`, `/pr`, `/ship-ready`
+- Skills: `/spec`, `/pr`, `/ship-ready`
 - Subagent: `bug-investigator`, read-only, for diagnosing a report before anyone edits code
 - No hooks. Add your own if you want one.
 

@@ -44,7 +44,7 @@ Then read your ticket, and pull it into Claude Code rather than retyping it:
 Then build the context before you build the feature:
 
 ```
-/epic docs/tickets/NWP-201.md
+/spec docs/tickets/NWP-201.md
 ```
 
 ## How this repo is used
@@ -53,7 +53,7 @@ It is both where you get the work and where you hand it in.
 
 1. **Download.** Clone this repository, or fork it if you want somewhere of your own to push.
 2. **Take your ticket.** `docs/tickets/` holds tickets written the way they arrive on a sprint board: description, acceptance criteria, notes from the team, and an explicit out-of-scope list.
-3. **Build the context.** `/epic` turns the ticket into a plan that cites real files. This is the habit the workshop is teaching, and it is worth 10% of your Build Battle score.
+3. **Build the context.** `/spec` turns the ticket into a plan that cites real files. This is the habit the workshop is teaching, and it is worth 10% of your Build Battle score.
 4. **Do the work.** Branch with the ticket ID, for example `NWP-201-issue-cards`.
 5. **Open a pull request** against this repository. The template asks what changed and how you verified it.
 6. **Get scored.** A Claude reviewer runs on every push to an open PR and comments with a breakdown. Push again and it re-scores. Your best run counts.
@@ -63,7 +63,7 @@ It is both where you get the work and where you hand it in.
 | Path | What it is |
 |------|-----------|
 | `docs/tickets/` | The tickets you work |
-| `docs/epics/` | Where your plans go, and the template they follow |
+| `docs/specs/` | Where your plans go, and the template they follow |
 | `build-battle/` | The exercise brief, scoring, and the skills and subagent you get |
 | `build-battle/merchant-console/` | Northwind Payments, the application itself |
 | `.github/` | PR template and the grading workflow |
@@ -83,8 +83,8 @@ Run Claude Code from `build-battle/` and you get:
 
 | | What it does |
 |---|---|
-| `/epic` | Turns a ticket into a plan that cites real files. Run it before you build |
-| `/pr` | Writes the pull request description from your branch, the ticket, and the epic |
+| `/spec` | Turns a ticket into a plan that cites real files. Run it before you build |
+| `/pr` | Writes the pull request description from your branch, the ticket, and the spec |
 | `/ship-ready` | Pre-push check: money math, UTC handling, duplicate logic, unvalidated input |
 | `bug-investigator` | A read-only subagent that diagnoses a bug report and returns a written root-cause analysis. It cannot edit anything, which is the point |
 
@@ -95,8 +95,8 @@ No hooks are preinstalled. Adding one is a good use of your time if you finish e
 | Concept | What It Is | Where You Use It |
 |---------|-----------|-----------------|
 | **CLAUDE.md** | Persistent project context that loads every session | Before you write a line |
-| **Skills** | Reusable slash commands in `.claude/skills/` | `/epic`, then `/ship-ready`, then `/pr` |
-| **Plan mode** | Claude proposes an approach before it edits | Right after the epic |
+| **Skills** | Reusable slash commands in `.claude/skills/` | `/spec`, then `/ship-ready`, then `/pr` |
+| **Plan mode** | Claude proposes an approach before it edits | When a change feels too big to watch live |
 | **Sub-Agents** | Independent Claude instances with their own context and permissions | `bug-investigator` on NWP-102 |
 | **Hooks** | Shell commands that fire before or after Claude acts | Yours to add |
 | **MCP Connectors** | Connect Claude to external tools | Driving the browser to verify your work |

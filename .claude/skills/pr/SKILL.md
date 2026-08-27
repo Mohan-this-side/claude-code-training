@@ -16,7 +16,7 @@ The reviewer reads this before it reads your diff, and it is worth 10% of your B
 - `git diff main...HEAD --stat` and then the diff itself — what actually changed
 - `git log main..HEAD --oneline` — how it was sequenced
 - The ticket in `docs/tickets/` — the acceptance criteria, verbatim
-- The epic in `docs/epics/`, if one exists — what was planned, and where the build departed from it
+- The spec in `docs/specs/`, if one exists — what was planned, and where the build departed from it
 
 ### 2. Check each acceptance criterion honestly
 

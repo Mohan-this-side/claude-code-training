@@ -1,7 +1,7 @@
-# EPIC · <ticket id> — <short title>
+# SPEC · <ticket id> — <short title>
 
-> Written before any code. Generated with `/epic`, then edited by a human.
-> Load it as context when you build: `@docs/epics/<this-file>.md`
+> Written before any code. Generated with `/spec`, then edited by a human.
+> Load it as context when you build: `@docs/specs/<this-file>.md`
 
 **Ticket:** [<ticket id>](../tickets/<ticket-id>.md)
 **Author:** <you>

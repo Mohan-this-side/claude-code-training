@@ -1,18 +1,18 @@
 ---
-name: epic
-description: Turn a ticket into an epic — a written, reviewable implementation plan grounded in the actual codebase. Use before writing code, when the user asks to plan a ticket or invokes /epic with a ticket path.
+name: spec
+description: Turn a ticket into a spec — a written, reviewable implementation plan grounded in the actual codebase. Use before writing code, when the user asks to plan a ticket or invokes /spec with a ticket path.
 ---
 
-# /epic
+# /spec
 
-Turn a ticket into an epic: a written, reviewable plan that becomes the context for the build.
+Turn a ticket into a spec: a written, reviewable plan that becomes the context for the build.
 
-Use this **before** writing code. A ticket says what someone wants. An epic says what is actually there, what you are going to do about it, and how you will know it worked. Writing it takes a few minutes and it is the difference between Claude building the right thing and Claude building something plausible.
+Use this **before** writing code. A ticket says what someone wants. A spec says what is actually there, what you are going to do about it, and how you will know it worked. Writing it takes a few minutes and it is the difference between Claude building the right thing and Claude building something plausible.
 
 ## Usage
 
 ```
-/epic docs/tickets/NWP-201.md
+/spec docs/tickets/NWP-201.md
 ```
 
 If no ticket is given, ask which one.
@@ -37,9 +37,9 @@ Ask the user about anything that genuinely changes the shape of the work. One qu
 Good questions: an ambiguous state transition, an unclear limit, whether an edge case is in scope.
 Bad questions: what colour the button should be.
 
-### 3. Write the epic
+### 3. Write the spec
 
-Write it to `docs/epics/<ticket-id>-<slug>.md` using the template in `docs/epics/TEMPLATE.md`. The slug is the ticket's branch name with the ticket id removed, so the epic and the branch line up: NWP-101 ships on `NWP-101-export-options`, so its epic is `docs/epics/NWP-101-export-options.md`. If the ticket names no branch, use two or three words from its title. Tell the engineer the exact path you wrote, because they will `@`-mention it next.
+Write it to `docs/specs/<ticket-id>-<slug>.md` using the template in `docs/specs/TEMPLATE.md`. The slug is the ticket's branch name with the ticket id removed, so the spec and the branch line up: NWP-101 ships on `NWP-101-export-options`, so its spec is `docs/specs/NWP-101-export-options.md`. If the ticket names no branch, use two or three words from its title. Tell the engineer the exact path you wrote, because they will `@`-mention it next.
 
 Fill in every section:
 
@@ -56,14 +56,14 @@ Fill in every section:
 
 Print a short summary and tell the user to review it before building. Then say this, plainly:
 
-> Load the epic as context before implementing: `@docs/epics/<file>.md`
+> Load the spec as context before implementing: `@docs/specs/<file>.md`
 
 ## Rules
 
-- **No code in the epic.** File paths and function names, yes. Implementations, no. If you are writing the solution, you are past the point of this document.
+- **No code in the spec.** File paths and function names, yes. Implementations, no. If you are writing the solution, you are past the point of this document.
 - **Every claim about the codebase carries a path.** "Payments are filtered in `src/app/api/payments/route.ts`" beats "there is a payments API".
 - **Sequence for verification, not for tidiness.** Each step should end somewhere you can check the result.
-- **Keep it under two pages.** An epic nobody reads is worth nothing, and a long one is usually a sign the ticket needs splitting.
+- **Keep it under two pages.** A spec nobody reads is worth nothing, and a long one is usually a sign the ticket needs splitting.
 - **Say what you do not know.** An honest open question is more useful than a confident guess.
 
 ## Why this exists

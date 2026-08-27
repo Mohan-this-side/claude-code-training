@@ -35,8 +35,8 @@ No database. Data lives in memory, seeded from JSON, and resets when you restart
 Do it in this order. The first two steps take five minutes and they are why the last one goes fast.
 
 1. **Read the ticket.** `@docs/tickets/NWP-201.md`
-2. **Write the epic.** `/epic docs/tickets/NWP-201.md` — Claude reads the actual codebase, asks you what is ambiguous, and writes a plan to `docs/epics/`. Review it and fix what is wrong.
-3. **Build with it loaded.** `@docs/epics/NWP-201-issue-cards.md`, then plan mode, then go.
+2. **Write the spec.** `/spec docs/tickets/NWP-201.md` — Claude reads the actual codebase, asks you what is ambiguous, and writes a plan to `docs/specs/`. Review it and fix what is wrong.
+3. **Build with it loaded.** `@docs/specs/NWP-201-issue-cards.md`, then plan mode, then go.
 4. **Check yourself.** `/ship-ready`
 5. **Write the PR.** `/pr`
 6. **Ship it.** Commit, push, open the pull request.
@@ -47,8 +47,8 @@ Skipping step 2 is the most common way to lose this. It is also worth 10% of you
 
 | | What it does |
 |---|---|
-| `/epic` | Turns the ticket into a plan that cites real files |
-| `/pr` | Writes the pull request description from your branch, the ticket, and the epic |
+| `/spec` | Turns the ticket into a plan that cites real files |
+| `/pr` | Writes the pull request description from your branch, the ticket, and the spec |
 | `/ship-ready` | Pre-push check: money math, UTC handling, duplicate logic, unvalidated input |
 | `bug-investigator` | A read-only subagent. Hand it a bug report and it returns a root-cause analysis with file paths. It cannot edit anything, which is exactly why you can trust the report |
 
@@ -63,7 +63,7 @@ A Claude reviewer reads every pull request and scores it. Core criteria are most
 | 40% | **Core criteria** | The six things the ticket says must work |
 | 20% | **Correctness rules** | Minor units, Luhn on the test BIN, reveal-once masking, the status state machine, server-side validation |
 | 15% | **Code quality** | Conventions followed, no second implementations, no new bugs |
-| 10% | **Context and planning** | Is there an epic, does it cite real files, does the code match it |
+| 10% | **Context and planning** | Is there a spec, does it cite real files, does the code match it |
 | 10% | **PR description** | What you built, what you met, how you verified it |
 | 5% | **Stretch goals** | Freeze/unfreeze, spend progress, category lock, tests, real empty and error states |
 
@@ -86,8 +86,8 @@ Push as many times as you like. Each push re-scores. Your best run counts.
 
 ## How to actually win this
 
-- **Spend the first five minutes on context, not prompting.** Read `merchant-console/CLAUDE.md`, then run `/epic`. Four conventions live in that file and every one of them is worth points.
-- **Correct the epic, not the diff.** Fixing a wrong plan takes a sentence. Fixing a wrong 400-line diff at minute 25 is what loses this.
+- **Spend the first five minutes on context, not prompting.** Read `merchant-console/CLAUDE.md`, then run `/spec`. Four conventions live in that file and every one of them is worth points.
+- **Correct the spec, not the diff.** Fixing a wrong plan takes a sentence. Fixing a wrong 400-line diff at minute 25 is what loses this.
 - **Plan mode before you build.** Shift+Tab, let Claude propose the shape, and steer it there.
 - **Get the six core criteria working before you touch a stretch goal.** A polished card list with an unvalidated API scores worse than a plain one that is correct.
 - **Give Claude a way to check itself.** A test, a curl, a screenshot. It works better when it can see the result.
