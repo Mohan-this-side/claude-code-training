@@ -11,6 +11,27 @@ export type DisputeStatus = "needs_response" | "under_review" | "won" | "lost"
 
 export type PayoutStatus = "paid" | "in_transit" | "pending"
 
+/** `active ⇄ frozen`, either to `cancelled`, and `cancelled` is terminal. */
+export type CardStatus = "active" | "frozen" | "cancelled"
+
+/** Server-side allowlist. Anything from a client is checked against this. */
+export const CARD_STATUSES: readonly CardStatus[] = [
+  "active",
+  "frozen",
+  "cancelled",
+]
+
+export const MERCHANT_CATEGORIES = [
+  "advertising",
+  "software",
+  "travel",
+  "office_supplies",
+  "contractors",
+  "utilities",
+] as const
+
+export type MerchantCategory = (typeof MERCHANT_CATEGORIES)[number]
+
 export interface Merchant {
   id: string
   name: string
@@ -69,6 +90,31 @@ export interface Payout {
   currency: Currency
   status: PayoutStatus
   paymentIds: string[]
+}
+
+/**
+ * A virtual card.
+ *
+ * The generated number is never a field here. The record carries the last four
+ * and an opaque `reference`; the full number exists in exactly one response,
+ * the creation one, and is not persisted anywhere.
+ */
+export interface Card {
+  id: string
+  nickname: string
+  merchantId: string
+  /** Integer minor units. Never a float. */
+  spendLimit: number
+  /** Integer minor units already spent against the limit. */
+  spent: number
+  currency: Currency
+  status: CardStatus
+  last4: string
+  /** Opaque handle for the generated number. Not the number. */
+  reference: string
+  category: MerchantCategory | null
+  /** ISO 8601, always UTC. */
+  createdAt: string
 }
 
 export interface PaymentFilters {
