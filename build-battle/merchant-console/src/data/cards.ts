@@ -37,6 +37,7 @@ function nextId(): string {
 export function createCard(input: IssueInput): { card: Card; number: string } {
   const number = issueNumber()
   const id = nextId()
+  const createdAt = new Date().toISOString()
   const card: Card = {
     id,
     nickname: input.nickname,
@@ -48,10 +49,40 @@ export function createCard(input: IssueInput): { card: Card; number: string } {
     last4: number.slice(-4),
     reference: `cref_${id.replace(/^crd_/, "")}`,
     category: input.category,
-    createdAt: new Date().toISOString(),
+    createdAt,
+    history: [{ status: "active", at: createdAt }],
   }
   store.cards.push(card)
   return { card, number }
+}
+
+/**
+ * Issue a card at most once for a given idempotency key.
+ *
+ * A retried POST — a double-click, a proxy replay, a client that timed out and
+ * tried again — must not leave ops with two cards and two limits. The key maps
+ * to the card it created; a replay returns that card and `replayed: true`, and
+ * deliberately no number: the reveal already happened and it is not stored, so
+ * there is nothing honest to return a second time.
+ */
+export function createCardIdempotent(
+  input: IssueInput,
+  key: string | null,
+): { card: Card; number: string | null; replayed: boolean } {
+  if (!key) {
+    const { card, number } = createCard(input)
+    return { card, number, replayed: false }
+  }
+
+  const existingId = store.cardIdempotency.get(key)
+  if (existingId) {
+    const existing = cardById(existingId)
+    if (existing) return { card: existing, number: null, replayed: true }
+  }
+
+  const { card, number } = createCard(input)
+  store.cardIdempotency.set(key, card.id)
+  return { card, number, replayed: false }
 }
 
 export type TransitionResult =
@@ -75,5 +106,8 @@ export function transitionCard(
   if (!resolved) return { ok: false, reason: "forbidden" }
 
   card.status = resolved
+  // Append-only: the trail records what happened, so a cancelled card still
+  // shows the day it was frozen.
+  card.history.push({ status: resolved, at: new Date().toISOString() })
   return { ok: true, card }
 }

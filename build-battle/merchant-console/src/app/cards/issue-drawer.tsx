@@ -59,6 +59,9 @@ export function IssueCardDrawer({
   const [category, setCategory] = useState<string>("none")
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState(() =>
+    crypto.randomUUID(),
+  )
   const [revealed, setRevealed] = useState<{
     number: string
     nickname: string
@@ -81,6 +84,8 @@ export function IssueCardDrawer({
     setCategory("none")
     setError(null)
     setRevealed(null)
+    // A fresh form is a fresh issue, so it gets a fresh key.
+    setIdempotencyKey(crypto.randomUUID())
   }
 
   function close() {
@@ -101,7 +106,12 @@ export function IssueCardDrawer({
     try {
       const response = await fetch("/api/cards", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          // Stable for the life of this filled-in form, so a double submit or
+          // a retry after a timeout cannot issue two cards.
+          "idempotency-key": idempotencyKey,
+        },
         body: JSON.stringify({
           nickname: nickname.trim(),
           merchantId,

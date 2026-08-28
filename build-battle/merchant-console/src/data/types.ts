@@ -115,6 +115,14 @@ export interface Card {
   category: MerchantCategory | null
   /** ISO 8601, always UTC. */
   createdAt: string
+  /** Every status this card has held, oldest first. Append-only. */
+  history: CardEvent[]
+}
+
+export interface CardEvent {
+  status: CardStatus
+  /** ISO 8601, always UTC. */
+  at: string
 }
 
 export interface PaymentFilters {

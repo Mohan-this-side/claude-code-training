@@ -1,4 +1,4 @@
-import { createCard, listCards } from "@/data/cards"
+import { createCardIdempotent, listCards } from "@/data/cards"
 import { merchants } from "@/data/merchants"
 import { validateIssueInput } from "@/lib/cards"
 import { NextRequest, NextResponse } from "next/server"
@@ -38,7 +38,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: checked.message }, { status: 400 })
   }
 
-  const { card, number } = createCard(checked.value)
+  // A retried POST must not issue a second card. The key is optional; without
+  // one the caller gets the old behaviour and owns the retry risk.
+  const key = request.headers.get("idempotency-key")
+  const { card, number, replayed } = createCardIdempotent(checked.value, key)
+
+  if (replayed) {
+    // The reveal already happened and the number is not stored, so a replay
+    // returns the card without one rather than inventing a second reveal.
+    return NextResponse.json({ card, number: null, replayed: true }, { status: 200 })
+  }
 
   // The only response in this codebase that contains a full card number.
   // It is not stored, not logged, and not returned by any other route.

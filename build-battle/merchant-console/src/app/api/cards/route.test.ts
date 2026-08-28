@@ -14,11 +14,15 @@ import { GET, POST } from "./route"
  * at the boundary, and that the state machine is enforced server-side.
  */
 
-function post(body: unknown) {
+function post(body: unknown, idempotencyKey?: string) {
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+  }
+  if (idempotencyKey) headers["idempotency-key"] = idempotencyKey
   return POST(
     new NextRequest("http://localhost/api/cards", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers,
       body: JSON.stringify(body),
     }),
   )
@@ -51,7 +55,12 @@ let seeded: typeof store.cards
 beforeEach(() => {
   seeded ??= [...store.cards]
   store.cards.length = 0
-  store.cards.push(...seeded.map((card) => ({ ...card })))
+  // Deep enough to matter: `history` is mutated by a transition, so a shallow
+  // copy would let one test's trail leak into the next.
+  store.cards.push(
+    ...seeded.map((card) => ({ ...card, history: [...card.history] })),
+  )
+  store.cardIdempotency.clear()
 })
 
 describe("GET /api/cards", () => {
@@ -152,6 +161,86 @@ describe("POST /api/cards", () => {
     const before = store.cards.length
     await post(validCard({ currency: "JPY" }))
     expect(store.cards).toHaveLength(before)
+  })
+})
+
+describe("POST /api/cards — idempotency", () => {
+  it("issues once for a repeated key and returns the same card", async () => {
+    const before = store.cards.length
+    const first = await (await post(validCard(), "key-abc")).json()
+    const replay = await post(validCard(), "key-abc")
+
+    expect(replay.status).toBe(200)
+    const second = await replay.json()
+    expect(second.replayed).toBe(true)
+    expect(second.card.id).toBe(first.card.id)
+    expect(store.cards).toHaveLength(before + 1)
+  })
+
+  it("does not reveal the number again on a replay", async () => {
+    await post(validCard(), "key-def")
+    const replay = await (await post(validCard(), "key-def")).json()
+    expect(replay.number).toBeNull()
+  })
+
+  it("issues separately for different keys", async () => {
+    const before = store.cards.length
+    await post(validCard(), "key-1")
+    await post(validCard(), "key-2")
+    expect(store.cards).toHaveLength(before + 2)
+  })
+
+  it("issues every time when no key is sent", async () => {
+    const before = store.cards.length
+    await post(validCard())
+    await post(validCard())
+    expect(store.cards).toHaveLength(before + 2)
+  })
+})
+
+describe("card history", () => {
+  it("records the issue as the first entry", async () => {
+    const created = await (await post(validCard())).json()
+    expect(created.card.history).toHaveLength(1)
+    expect(created.card.history[0].status).toBe("active")
+  })
+
+  it("appends every accepted transition, oldest first", async () => {
+    const created = await (await post(validCard())).json()
+    await patch(created.card.id, { status: "frozen" })
+    await patch(created.card.id, { status: "active" })
+    const final = await (await patch(created.card.id, { status: "cancelled" })).json()
+
+    expect(final.card.history.map((e: { status: string }) => e.status)).toEqual([
+      "active",
+      "frozen",
+      "active",
+      "cancelled",
+    ])
+  })
+
+  it("does not record a refused transition", async () => {
+    const created = await (await post(validCard())).json()
+    await patch(created.card.id, { status: "cancelled" })
+    await patch(created.card.id, { status: "active" }) // refused, 409
+    const card = store.cards.find((c) => c.id === created.card.id)!
+    expect(card.history.map((e) => e.status)).toEqual(["active", "cancelled"])
+  })
+})
+
+describe("seed card spend", () => {
+  it("is derived from captured payments, never above the limit", async () => {
+    const body = await (await GET()).json()
+    for (const card of body.rows) {
+      expect(Number.isInteger(card.spent)).toBe(true)
+      expect(card.spent).toBeGreaterThanOrEqual(0)
+      expect(card.spent).toBeLessThanOrEqual(card.spendLimit)
+    }
+  })
+
+  it("starts a newly issued card at zero", async () => {
+    const created = await (await post(validCard())).json()
+    expect(created.card.spent).toBe(0)
   })
 })
 

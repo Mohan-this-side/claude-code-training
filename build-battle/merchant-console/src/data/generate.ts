@@ -82,7 +82,6 @@ const SEED_CARDS: {
   nickname: string
   merchantIndex: number
   spendLimit: number
-  spent: number
   status: CardStatus
   category: MerchantCategory | null
   daysAgo: number
@@ -91,7 +90,6 @@ const SEED_CARDS: {
     nickname: "Meta ad spend",
     merchantIndex: 0,
     spendLimit: 250_000,
-    spent: 212_400,
     status: "active",
     category: "advertising",
     daysAgo: 34,
@@ -100,7 +98,6 @@ const SEED_CARDS: {
     nickname: "Figma + Linear seats",
     merchantIndex: 1,
     spendLimit: 80_000,
-    spent: 24_900,
     status: "active",
     category: "software",
     daysAgo: 21,
@@ -109,7 +106,6 @@ const SEED_CARDS: {
     nickname: "Contractor — Q3 design",
     merchantIndex: 2,
     spendLimit: 500_000,
-    spent: 500_000,
     status: "frozen",
     category: "contractors",
     daysAgo: 12,
@@ -118,32 +114,83 @@ const SEED_CARDS: {
     nickname: "Trade show travel",
     merchantIndex: 3,
     spendLimit: 150_000,
-    spent: 8_250,
     status: "cancelled",
     category: "travel",
     daysAgo: 5,
   },
 ]
 
-function generateCards(): Card[] {
+/**
+ * Spend for a seed card, derived rather than invented.
+ *
+ * The store has no card reference on `Payment`, so attribution is by merchant
+ * and window: the captured payments for this card's merchant, in the card's
+ * own currency, dated after the card was issued, summed and capped at the
+ * limit. That is a real derivation from real rows — not a number picked to
+ * make a progress bar look interesting — and it is stated here because the
+ * attribution is coarser than a true card-to-payment link would be.
+ */
+function derivedSpend(
+  payments: Payment[],
+  merchantId: string,
+  currency: Currency,
+  since: string,
+  spendLimit: number,
+): number {
+  const attributed = payments.filter(
+    (payment) =>
+      payment.merchantId === merchantId &&
+      payment.currency === currency &&
+      payment.status === "captured" &&
+      payment.createdAt >= since,
+  )
+  const total = attributed.reduce((sum, payment) => sum + payment.amount, 0)
+  return Math.min(spendLimit, total)
+}
+
+function generateCards(payments: Payment[]): Card[] {
   return SEED_CARDS.map((seed, index) => {
     const merchant = merchants[seed.merchantIndex % merchants.length]
     const createdAt = new Date(
       GENERATED_AT.getTime() - seed.daysAgo * 86_400_000,
-    )
+    ).toISOString()
+    const currency = merchant.currency as Currency
     const number = issueNumber(rand)
+
+    // Oldest first. A seeded card that is not active reached that status after
+    // it was issued, so the trail has both entries rather than only the last.
+    const history =
+      seed.status === "active"
+        ? [{ status: "active" as CardStatus, at: createdAt }]
+        : [
+            { status: "active" as CardStatus, at: createdAt },
+            {
+              status: seed.status,
+              at: new Date(
+                new Date(createdAt).getTime() + 86_400_000,
+              ).toISOString(),
+            },
+          ]
+
     return {
       id: `crd_${pad(index + 1)}`,
       nickname: seed.nickname,
       merchantId: merchant.id,
       spendLimit: seed.spendLimit,
-      spent: seed.spent,
-      currency: merchant.currency as Currency,
+      spent: derivedSpend(
+        payments,
+        merchant.id,
+        currency,
+        createdAt,
+        seed.spendLimit,
+      ),
+      currency,
       status: seed.status,
       last4: number.slice(-4),
       reference: `cref_${pad(index + 1)}`,
       category: seed.category,
-      createdAt: createdAt.toISOString(),
+      createdAt,
+      history,
     }
   })
 }
@@ -230,7 +277,7 @@ export function generate() {
   }
 
   const payouts = generatePayouts(payments)
-  const cards = generateCards()
+  const cards = generateCards(payments)
   return { payments, refunds, disputes, payouts, cards }
 }
 

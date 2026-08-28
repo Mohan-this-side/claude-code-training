@@ -110,6 +110,23 @@ export default async function CardDetailPage({
         )}
       </dl>
 
+      <section aria-label="Status history" className="mt-8">
+        <h2 className="text-sm font-medium text-gray-900 dark:text-gray-50">
+          Status history
+        </h2>
+        <ol className="mt-3 space-y-2">
+          {card.history.map((event, index) => (
+            <li
+              key={`${event.status}-${event.at}-${index}`}
+              className="flex items-center gap-3 text-sm"
+            >
+              <CardStatusBadge status={event.status} />
+              <span className="text-gray-500">{formatDate(event.at)}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       <p className="mt-8 text-sm text-gray-500">
         The full number was shown once, when this card was issued. Northwind
         does not store it, so it cannot be shown again.
