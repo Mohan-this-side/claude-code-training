@@ -22,6 +22,19 @@ export function formatMoney(minorUnits: number, currency: Currency): string {
   return `${negative ? "-" : ""}${SYMBOLS[currency]}${body}`
 }
 
+/**
+ * Minor units as a plain decimal: 25000 becomes "250.00". No symbol, no
+ * grouping separator. For files rather than screens — a grouped "1,234.56"
+ * would need quoting in a CSV, and the currency travels in its own column.
+ */
+export function formatMinorUnitsPlain(minorUnits: number): string {
+  const negative = minorUnits < 0
+  const absolute = Math.abs(minorUnits)
+  const whole = Math.floor(absolute / 100)
+  const cents = absolute % 100
+  return `${negative ? "-" : ""}${whole}.${String(cents).padStart(2, "0")}`
+}
+
 /** Compact form for stat cards: $12.4k. Display only. */
 export function formatMoneyCompact(
   minorUnits: number,
