@@ -1,3 +1,4 @@
+import { ProgressBar } from "@/components/ProgressBar"
 import { CardStatusBadge } from "@/components/ui/cards/CardStatusBadge"
 import { cardById } from "@/data/cards"
 import { merchantById } from "@/data/merchants"
@@ -72,24 +73,12 @@ export default async function CardDetailPage({
             {formatMoney(card.spendLimit, card.currency)}
           </p>
         </div>
-        <div
-          className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800"
-          role="progressbar"
-          aria-valuenow={percent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="Spend against limit"
-        >
-          <div
-            className={cx(
-              "h-full rounded-full transition-all",
-              nearLimit
-                ? "bg-amber-500 dark:bg-amber-400"
-                : "bg-blue-500 dark:bg-blue-500",
-            )}
-            style={{ width: `${percent}%` }}
-          />
-        </div>
+        <ProgressBar
+          className="mt-3"
+          value={percent}
+          variant={nearLimit ? "warning" : "default"}
+          label={`Spend against limit for ${card.nickname}`}
+        />
         <p className="mt-2 text-sm text-gray-500">
           {percent}% used · {formatMoney(remaining, card.currency)} remaining
           {nearLimit && " · close to the limit"}
