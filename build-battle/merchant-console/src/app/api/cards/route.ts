@@ -29,7 +29,10 @@ export async function POST(request: NextRequest) {
 
   const checked = validateIssueInput(
     body,
-    merchants.map((merchant) => merchant.id),
+    merchants.map((merchant) => ({
+      id: merchant.id,
+      currency: merchant.currency,
+    })),
   )
   if (!checked.ok) {
     return NextResponse.json({ message: checked.message }, { status: 400 })

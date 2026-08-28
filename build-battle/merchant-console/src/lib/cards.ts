@@ -121,7 +121,7 @@ export interface IssueInput {
  */
 export function validateIssueInput(
   body: unknown,
-  merchantIds: readonly string[],
+  merchants: readonly { id: string; currency: Currency }[],
 ): { ok: true; value: IssueInput } | { ok: false; message: string } {
   if (typeof body !== "object" || body === null) {
     return { ok: false, message: "Expected a card to issue." }
@@ -136,7 +136,11 @@ export function validateIssueInput(
     return { ok: false, message: "Nickname is limited to 60 characters." }
   }
 
-  if (typeof raw.merchantId !== "string" || !merchantIds.includes(raw.merchantId)) {
+  const merchant =
+    typeof raw.merchantId === "string"
+      ? merchants.find((candidate) => candidate.id === raw.merchantId)
+      : undefined
+  if (!merchant) {
     return { ok: false, message: "Pick a merchant for this card." }
   }
 
@@ -155,6 +159,17 @@ export function validateIssueInput(
     return { ok: false, message: "Currency must be USD, EUR, or GBP." }
   }
 
+  // A card settles against one merchant, so its currency is the merchant's.
+  // The form already knows this at selection time; enforcing it here means a
+  // hand-built request cannot create a GBP card on a USD merchant and leave
+  // ops holding two currencies on one record.
+  if (raw.currency !== merchant.currency) {
+    return {
+      ok: false,
+      message: `That merchant settles in ${merchant.currency}, so the card must be ${merchant.currency}.`,
+    }
+  }
+
   const category =
     raw.category === undefined || raw.category === null || raw.category === ""
       ? null
@@ -169,7 +184,7 @@ export function validateIssueInput(
     ok: true,
     value: {
       nickname,
-      merchantId: raw.merchantId,
+      merchantId: merchant.id,
       spendLimit,
       currency: raw.currency,
       category,

@@ -12,7 +12,11 @@ import {
   validateIssueInput,
 } from "./cards"
 
-const MERCHANT_IDS = ["mch_01", "mch_02"]
+/** Two merchants that settle in different currencies, so agreement is testable. */
+const MERCHANTS = [
+  { id: "mch_01", currency: "USD" as const },
+  { id: "mch_02", currency: "GBP" as const },
+]
 
 /** Deterministic stand-in for Math.random, so generated numbers are stable. */
 function sequence(values: number[]): () => number {
@@ -136,7 +140,7 @@ describe("isCardStatus", () => {
 
 describe("validateIssueInput", () => {
   it("accepts a well-formed card", () => {
-    const result = validateIssueInput(validBody(), MERCHANT_IDS)
+    const result = validateIssueInput(validBody(), MERCHANTS)
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.value.spendLimit).toBe(25000)
@@ -146,59 +150,84 @@ describe("validateIssueInput", () => {
   })
 
   it("rejects a missing merchant", () => {
-    expect(validateIssueInput(validBody({ merchantId: "" }), MERCHANT_IDS).ok).toBe(false)
-    expect(validateIssueInput(validBody({ merchantId: undefined }), MERCHANT_IDS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ merchantId: "" }), MERCHANTS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ merchantId: undefined }), MERCHANTS).ok).toBe(false)
   })
 
   it("rejects a merchant that does not exist, not just a blank one", () => {
-    const result = validateIssueInput(validBody({ merchantId: "mch_99" }), MERCHANT_IDS)
+    const result = validateIssueInput(validBody({ merchantId: "mch_99" }), MERCHANTS)
     expect(result.ok).toBe(false)
   })
 
   it("rejects a zero or negative limit", () => {
-    expect(validateIssueInput(validBody({ spendLimit: 0 }), MERCHANT_IDS).ok).toBe(false)
-    expect(validateIssueInput(validBody({ spendLimit: -100 }), MERCHANT_IDS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ spendLimit: 0 }), MERCHANTS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ spendLimit: -100 }), MERCHANTS).ok).toBe(false)
   })
 
   it("rejects a limit above 5,000,000 minor units but allows exactly that", () => {
     expect(
-      validateIssueInput(validBody({ spendLimit: MAX_SPEND_LIMIT + 1 }), MERCHANT_IDS).ok,
+      validateIssueInput(validBody({ spendLimit: MAX_SPEND_LIMIT + 1 }), MERCHANTS).ok,
     ).toBe(false)
     expect(
-      validateIssueInput(validBody({ spendLimit: MAX_SPEND_LIMIT }), MERCHANT_IDS).ok,
+      validateIssueInput(validBody({ spendLimit: MAX_SPEND_LIMIT }), MERCHANTS).ok,
     ).toBe(true)
   })
 
   it("rejects a float limit, because money is integer minor units", () => {
-    expect(validateIssueInput(validBody({ spendLimit: 250.5 }), MERCHANT_IDS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ spendLimit: 250.5 }), MERCHANTS).ok).toBe(false)
   })
 
   it("rejects a limit sent as a string", () => {
-    expect(validateIssueInput(validBody({ spendLimit: "25000" }), MERCHANT_IDS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ spendLimit: "25000" }), MERCHANTS).ok).toBe(false)
   })
 
   it("rejects a currency outside USD, EUR, GBP", () => {
-    expect(validateIssueInput(validBody({ currency: "JPY" }), MERCHANT_IDS).ok).toBe(false)
-    expect(validateIssueInput(validBody({ currency: "usd" }), MERCHANT_IDS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ currency: "JPY" }), MERCHANTS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ currency: "usd" }), MERCHANTS).ok).toBe(false)
   })
 
   it("rejects an empty nickname", () => {
-    expect(validateIssueInput(validBody({ nickname: "   " }), MERCHANT_IDS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ nickname: "   " }), MERCHANTS).ok).toBe(false)
   })
 
   it("treats an absent category as none rather than an error", () => {
-    const result = validateIssueInput(validBody({ category: null }), MERCHANT_IDS)
+    const result = validateIssueInput(validBody({ category: null }), MERCHANTS)
     expect(result.ok).toBe(true)
     if (result.ok) expect(result.value.category).toBeNull()
   })
 
   it("rejects a category that is not on the allowlist", () => {
-    expect(validateIssueInput(validBody({ category: "weapons" }), MERCHANT_IDS).ok).toBe(false)
+    expect(validateIssueInput(validBody({ category: "weapons" }), MERCHANTS).ok).toBe(false)
   })
 
   it("rejects a body that is not an object", () => {
-    expect(validateIssueInput(null, MERCHANT_IDS).ok).toBe(false)
-    expect(validateIssueInput("card", MERCHANT_IDS).ok).toBe(false)
+    expect(validateIssueInput(null, MERCHANTS).ok).toBe(false)
+    expect(validateIssueInput("card", MERCHANTS).ok).toBe(false)
+  })
+
+  it("rejects a currency the merchant does not settle in", () => {
+    // mch_01 settles USD, so a GBP card on it is two currencies on one record.
+    const result = validateIssueInput(
+      validBody({ merchantId: "mch_01", currency: "GBP" }),
+      MERCHANTS,
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.message).toContain("USD")
+  })
+
+  it("accepts the merchant's own currency for each merchant", () => {
+    expect(
+      validateIssueInput(
+        validBody({ merchantId: "mch_02", currency: "GBP" }),
+        MERCHANTS,
+      ).ok,
+    ).toBe(true)
+    expect(
+      validateIssueInput(
+        validBody({ merchantId: "mch_02", currency: "USD" }),
+        MERCHANTS,
+      ).ok,
+    ).toBe(false)
   })
 })
 

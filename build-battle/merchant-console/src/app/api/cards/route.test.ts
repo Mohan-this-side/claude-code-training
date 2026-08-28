@@ -136,6 +136,18 @@ describe("POST /api/cards", () => {
     expect((await post(validCard({ currency: "JPY" }))).status).toBe(400)
   })
 
+  it("rejects a currency the chosen merchant does not settle in", async () => {
+    const merchant = store.merchants[0]
+    const other = (["USD", "EUR", "GBP"] as const).find(
+      (code) => code !== merchant.currency,
+    )!
+    const response = await post(
+      validCard({ merchantId: merchant.id, currency: other }),
+    )
+    expect(response.status).toBe(400)
+    expect((await response.json()).message).toContain(merchant.currency)
+  })
+
   it("does not write a card when validation fails", async () => {
     const before = store.cards.length
     await post(validCard({ currency: "JPY" }))

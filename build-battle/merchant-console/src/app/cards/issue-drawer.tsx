@@ -258,10 +258,13 @@ export function IssueCardDrawer({
                     >
                       Currency
                     </label>
-                    <Select
-                      value={currency}
-                      onValueChange={(next) => setCurrency(next)}
-                    >
+                    {/*
+                      A card settles against one merchant, so the currency is
+                      the merchant's and is not ops' to change. Offering the
+                      other two here would only produce a request the server
+                      rejects. The server checks it regardless.
+                    */}
+                    <Select value={currency} disabled>
                       <SelectTrigger id="card-currency" className="mt-2">
                         <SelectValue />
                       </SelectTrigger>
@@ -273,6 +276,9 @@ export function IssueCardDrawer({
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {merchantId ? "Set by the merchant" : "Pick a merchant first"}
+                    </p>
                   </div>
                 </div>
 
